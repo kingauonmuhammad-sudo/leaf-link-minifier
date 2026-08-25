@@ -18,7 +18,7 @@ app.get("/api/urls", (req, res) => {
   res.json(urls);
 });
 
-app.get("/url/:id", (req, res) => {
+app.get("/:id", (req, res) => {
   const savedUrl = urls.find((item) => item.id === req.params.id);
 
   if (!savedUrl) {
@@ -70,10 +70,10 @@ app.post("/submit/url", (req, res) => {
     return res.status(400).json({ error: "Please provide a valid URL" });
   }
 
-  const id = crypto.randomBytes(4).toString("hex");
+  const id = crypto.randomBytes(2).toString("hex");
   urls.push({ id, url });
 
-  res.status(201).send(`http://localhost:${PORT}/url/${id}`);
+  res.status(201).send(`/${id}`);
 });
 
 app.use((req, res) => {
