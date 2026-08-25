@@ -81,9 +81,9 @@
                 const row = document.createElement('div');
                 row.className = 'ic-d-flex ic-items-center ic-gap-3 ic-bg-white ic-border-2 ic-border-solid ic-border-green-200 ic-padding-x-4 ic-padding-y-2-5 ic-rounded-none';
                 row.innerHTML =
-                    '<a href="/url/' + item.id + '" target="_blank" class="ic-poppi ic-smmed ic-semi ic-text-green-600 ic-text-green-800-hover ic-none">/url/' + item.id + '</a>' +
+                    '<a href="/' + item.id + '" target="_blank" class="ic-poppi ic-smmed ic-semi ic-text-green-600 ic-text-green-800-hover ic-none">/' + item.id + '</a>' +
                     '<span class="ic-flex-1 ic-merri ic-small ic-text-green-900 ic-truncate">' + item.url.replace(/</g, '&lt;') + '</span>' +
-                    '<a href="/url/' + item.id + '" target="_blank" class="ic-d-flex ic-text-green-500 ic-text-green-800-hover"><i-ic class="ic-box-arrow-up-right ic-1x"></i-ic></a>';
+                    '<a href="/' + item.id + '" target="_blank" class="ic-d-flex ic-text-green-500 ic-text-green-800-hover"><i-ic class="ic-box-arrow-up-right ic-1x"></i-ic></a>';
                 urlList.appendChild(row);
             });
         }
