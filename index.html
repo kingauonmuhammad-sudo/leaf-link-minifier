@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeafLink — URL Shortener</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic-framework.css">
+</head>
+<body class="ic-bg-green-50">
+
+    <section class="ic-container ic-padding-y-12 ic-d-flex ic-flex-col ic-items-center">
+
+        <form id="urlForm"
+            class="ic-w-full ic-max-w-112 ic-bg-white ic-border-2 ic-border-solid ic-border-green-200 ic-shadow-md ic-padding-8 ic-rounded-none">
+
+            <div class="ic-text-center ic-margin-bottom-6">
+                <i-ic class="ic-scissors ic-3x ic-text-green-500 ic-margin-bottom-3"></i-ic>
+                <h2 class="ic-playf ic-extrabold ic-xlarge ic-text-green-700 ic-margin-0">LeafLink Shortener</h2>
+                <p class="ic-merri ic-italic ic-small ic-text-green-400 ic-margin-top-2">Long links, trimmed naturally.</p>
+            </div>
+
+            <div class="ic-margin-bottom-6">
+                <label for="url" class="ic-d-flex ic-items-center ic-gap-2 ic-poppi ic-smmed ic-semi ic-text-green-900 ic-margin-bottom-1-5">
+                    <i-ic class="ic-link-45deg ic-1x ic-text-green-500"></i-ic>
+                    Website URL
+                </label>
+                <input type="url" id="url" name="url" placeholder="https://example.com/very/long/link" required
+                    class="ic-input ic-poppi ic-border-2 ic-border-solid ic-border-green-200 ic-outline-none ic-rounded-none">
+            </div>
+
+            <button type="submit"
+                class="ic-d-flex ic-items-center ic-justify-center ic-gap-2 ic-w-full ic-poppi ic-smmed ic-semi ic-cursor-pointer ic-bg-green-600 ic-bg-green-700-hover ic-text-white ic-border-2 ic-border-solid ic-border-green-600 ic-padding-y-2-5 ic-rounded-none">
+                <i-ic class="ic-scissors ic-1x"></i-ic>
+                Shorten URL
+            </button>
+
+            <div id="resultBox" class="ic-d-none ic-margin-top-6 ic-bg-green-100 ic-border-2 ic-border-solid ic-border-green-300 ic-padding-4 ic-rounded-none">
+                <p class="ic-poppi ic-tiny ic-semi ic-uppercase ic-tracking-wider ic-text-green-700 ic-margin-0 ic-margin-bottom-2">Your short link is ready</p>
+                <div class="ic-d-flex ic-items-center ic-gap-2">
+                    <a id="resultLink" href="#" target="_blank"
+                        class="ic-flex-1 ic-poppi ic-smmed ic-semi ic-text-green-700 ic-text-green-800-hover ic-none ic-truncate"></a>
+                    <button type="button" id="copyBtn"
+                        class="ic-d-flex ic-items-center ic-gap-1 ic-poppi ic-small ic-semi ic-cursor-pointer ic-bg-white ic-text-green-600 ic-border-2 ic-border-solid ic-border-green-600 ic-bg-green-600-hover ic-text-green-50-hover ic-padding-x-3 ic-padding-y-1 ic-rounded-none">
+                        <i-ic class="ic-copy ic-1x"></i-ic> Copy
+                    </button>
+                </div>
+            </div>
+
+            <p id="errorBox" class="ic-d-none ic-merri ic-small ic-text-rose-600 ic-margin-top-4 ic-margin-bottom-0"></p>
+
+        </form>
+
+        <div class="ic-w-full ic-max-w-112 ic-margin-top-6">
+            <h3 class="ic-playf ic-bold ic-large ic-text-green-700 ic-margin-0 ic-margin-bottom-3">Recent Links</h3>
+            <div id="urlList" class="ic-d-flex ic-flex-col ic-gap-2"></div>
+        </div>
+
+    </section>
+
+    <script>
+        const form = document.getElementById('urlForm');
+        const input = document.getElementById('url');
+        const resultBox = document.getElementById('resultBox');
+        const resultLink = document.getElementById('resultLink');
+        const errorBox = document.getElementById('errorBox');
+        const copyBtn = document.getElementById('copyBtn');
+        const urlList = document.getElementById('urlList');
+
+        async function loadUrls() {
+            const res = await fetch('/api/urls');
+            const urls = await res.json();
+            urlList.innerHTML = '';
+
+            if (urls.length === 0) {
+                urlList.innerHTML = '<p class="ic-merri ic-italic ic-small ic-text-green-400 ic-margin-0">No links shortened yet. Be the first!</p>';
+                return;
+            }
+
+            urls.slice().reverse().forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'ic-d-flex ic-items-center ic-gap-3 ic-bg-white ic-border-2 ic-border-solid ic-border-green-200 ic-padding-x-4 ic-padding-y-2-5 ic-rounded-none';
+                row.innerHTML =
+                    '<a href="/url/' + item.id + '" target="_blank" class="ic-poppi ic-smmed ic-semi ic-text-green-600 ic-text-green-800-hover ic-none">/url/' + item.id + '</a>' +
+                    '<span class="ic-flex-1 ic-merri ic-small ic-text-green-900 ic-truncate">' + item.url.replace(/</g, '&lt;') + '</span>' +
+                    '<a href="/url/' + item.id + '" target="_blank" class="ic-d-flex ic-text-green-500 ic-text-green-800-hover"><i-ic class="ic-box-arrow-up-right ic-1x"></i-ic></a>';
+                urlList.appendChild(row);
+            });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            resultBox.classList.add('ic-d-none');
+            errorBox.classList.add('ic-d-none');
+
+            const res = await fetch('/submit/url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: input.value })
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                errorBox.textContent = data.error || 'Something went wrong. Please try again.';
+                errorBox.classList.remove('ic-d-none');
+                return;
+            }
+
+            const shortUrl = await res.text();
+            resultLink.textContent = shortUrl;
+            resultLink.href = shortUrl;
+            resultBox.classList.remove('ic-d-none');
+            input.value = '';
+            loadUrls();
+        });
+
+        copyBtn.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(resultLink.textContent);
+            copyBtn.innerHTML = '<i-ic class="ic-check-lg ic-1x"></i-ic> Copied!';
+            setTimeout(() => {
+                copyBtn.innerHTML = '<i-ic class="ic-copy ic-1x"></i-ic> Copy';
+            }, 1500);
+        });
+
+        loadUrls();
+    </script>
+</body>
+</html>
